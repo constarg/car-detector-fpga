@@ -49,104 +49,96 @@ architecture Behavioral of main is
     signal a: std_logic_vector(1 downto 0);
     signal b: std_logic_vector(1 downto 0);
     
-    -- FSM - State machine.
-    type car_fms is (s0, s1, s2, s3, s4);
-    
-    -- port a states.
-    signal port_a_current: car_fms := s0;
-    signal port_a_next: car_fms := s0;
-    -- port b states.
-    signal port_b_current: car_fms := s0;
-    signal port_b_next: car_fms := s0;
-    
     -- free space.
     signal park_free_s: std_logic_vector(3 downto 0) := "1111";
+    -- max number of cars.
+    signal park_max: std_logic_vector(3 downto 0) := "1111";
     -- total cars.
-    signal park_total: unsigned(3 downto 0) := "0000";
+    signal park_total: std_logic_vector(3 downto 0) := "0000";
 
+    -- if car enter on a.
+    signal car_a_enters: std_logic_vector(0 downto 0);
+    -- if car enter on b.
+    signal car_b_enters: std_logic_vector(0 downto 0);
+    -- if car leave on a.
+    signal car_a_leaves: std_logic_vector(0 downto 0);
+    -- if car leave on b.
+    signal car_b_leaves: std_logic_vector(0 downto 0);
 
 begin
+    -- sensor for port a.
     a <= din(1 downto 0);
-    b <= din(3 downto 2);
-    
-    -- process for port a.
-car_set_state: 
-        process (clk)
-        begin
-            if rising_edge(clk)
+    -- sensor for port b.
+    b <= din(3 downto 2);   
+
+car_enter_a:
+    entity work.car_enters(Behavioral)
+    port map(
+              sensors => a,
+              clk => clk,
+              entered => car_a_enters(0)
+            );
+            
+car_enter_b:
+     entity work.car_enters(Behavioral)
+     port map(
+              sensors => b,
+              clk => clk,
+              entered => car_b_enters(0)
+             );  
+
+car_leaves_a:
+     entity work.car_leaves(Behavioral) 
+     port map(
+              sensors => a,
+              clk => clk,
+              leave => car_a_leaves(0)
+             );  
+
+car_leaves_b:
+     entity work.car_leaves(Behavioral) 
+     port map(
+              sensors => b,
+              clk => clk,
+              leave => car_b_leaves(0)
+             );  
+
+
+-- add and remove the cars that enters and leaves
+sum:
+    process (clk) is
+        variable park_tmp: std_logic_vector(4 downto 0) := "00000";
+        variable park_sum: std_logic_vector(1 downto 0) := "00";
+        variable park_def: std_logic_vector(1 downto 0) := "00";
+        
+    begin
+        -- in the rising edge of the clock check.
+        if rising_edge(clk)
+        then
+            -- the sum of the cars that has been entered.
+            park_sum := '0' & std_logic_vector(unsigned(car_a_enters) + unsigned(car_b_enters));
+            
+            -- the sum of the cars that has been leave.
+            park_def := '0' & std_logic_vector(unsigned(car_a_leaves) + unsigned(car_b_leaves));
+            
+            -- add to the total cars in the parking the new cars.
+            park_tmp := std_logic_vector(unsigned(park_tmp) + unsigned(park_sum));
+ 
+            -- if the cars in the park is greater than those who left.           
+            if park_tmp > park_def
             then
-                port_a_current <= port_a_next;
+                -- then remove the cars that left.
+                park_total <= std_logic_vector(unsigned(park_tmp(3 downto 0)) - unsigned(park_def));
+            else
+                -- otherwise the cars in the parking is zero ( because the parking can't have negative car number ).
+                park_total <= (others => '0');
             end if;
             
-        end process car_set_state;
+        end if;
         
--- change state
-car_change_a_state:
-        process (port_a_current, a) is
-        begin
-            port_a_next <= port_a_current;
-            -- change the state of port a.
-            case port_a_current is
-                when s0 =>
-                    -- car reach the first sensor.
-                    if a = "01"
-                    then
-                        port_a_next <= s1;
-                    else
-                        port_a_next <= s0;
-                    end if;
-                when s1 =>
-                    -- car reach the two sensors.
-                    if a = "11"
-                    then
-                        port_a_next <= s2;
-                    else
-                        port_a_next <= s0;
-                    end if;
-                when s2 =>
-                    -- car leave from first sensor.
-                    if a = "10"
-                    then
-                        port_a_next <= s3;
-                    else
-                        port_a_next <= s0;
-                    end if;
-                when s3 =>
-                    -- car leave the second sensor.
-                    if a = "00"
-                    then
-                        port_a_next <= s4;
-                    else
-                        port_a_next <= s0;
-                    end if;
-                when s4 =>
-                    port_a_next <= s0;
-            
-            end case;
-        
-        end process car_change_a_state;
-        
--- car enters.
-car_enter: 
-        process (port_a_current) is
-        begin
-             case port_a_current is
-                when s4 =>
-                    if std_logic_vector(park_total) < park_free_s
-                    then
-                        park_total <= park_total + 1;
-                    else
-                        park_total <= park_total;
-                    end if;
-                when others =>
-                    park_total <= park_total;
-                    
-             end case;
-             
-        end process car_enter;
+    end process sum;
+    
     
     -- initialize the parking space.
-    park_free_s <= din when we = '1' else park_free_s;
-    park_free <= park_free_s;
-
+    
 end Behavioral;
