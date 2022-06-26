@@ -72,11 +72,13 @@ car_change_a_state:
         -- change the state of port a.
         case port_a_current is
             when s0 =>
-               
                 -- car reach the first sensor.
                 if sensors = "01"
                 then
                     port_a_next <= s1;
+                elsif sensors = "00"
+                then
+                    port_a_next <= s0;
                 else
                     port_a_next <= s0;
                 end if;
@@ -85,24 +87,33 @@ car_change_a_state:
                 if sensors = "11"
                 then
                     port_a_next <= s2;
-                else
+                elsif sensors = "00"
+                then
                     port_a_next <= s0;
+                else
+                    port_a_next <= s1;
                 end if;
             when s2 =>
                 -- car leave from first sensor.
                 if sensors = "10"
                 then
                     port_a_next <= s3;
-                else
+                elsif sensors = "00"
+                then
                     port_a_next <= s0;
+                else
+                    port_a_next <= s2;
                 end if;
             when s3 =>
                 -- car leave the second sensor.
                 if sensors = "00"
                 then
                     port_a_next <= s4;
-                else
+                elsif sensors = "11"
+                then
                     port_a_next <= s0;
+                else
+                    port_a_next <= s3;
                 end if;
             when s4 =>
                 port_a_next <= s0;

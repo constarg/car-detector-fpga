@@ -50,9 +50,9 @@ architecture Behavioral of main is
     signal b: std_logic_vector(1 downto 0);
     
     -- max number of cars.
-    signal park_max: std_logic_vector(3 downto 0) := "1111";
+    signal park_total: std_logic_vector(3 downto 0) := "1111";
     -- total cars.
-    signal park_total: std_logic_vector(3 downto 0) := "0000";
+    signal park_current: std_logic_vector(3 downto 0) := "0000";
 
     -- if car enter on a.
     signal car_a_enters: std_logic_vector(0 downto 0);
@@ -67,6 +67,9 @@ architecture Behavioral of main is
     signal we_start_1: std_logic;
     signal we_start_2: std_logic;
     signal we_pulse: std_logic;
+    
+    -- empty.
+    signal empty_s: std_logic;
 
 begin
     -- sensor for port a.
@@ -118,11 +121,11 @@ sum:
         variable park_def: std_logic_vector(1 downto 0) := "00";
         
     begin
-        park_tmp := '0' & park_total;
+        park_tmp := '0' & park_current;
         -- in the rising edge of the clock check.
         if rising_edge(clk)
         then
-            if ce = '0'
+            if ce = '0' and we = '0'
             then
                 -- the sum of the cars that has been entered.
                 park_sum := '0' & std_logic_vector(unsigned(car_a_enters) + unsigned(car_b_enters));
@@ -134,18 +137,19 @@ sum:
                 park_tmp := std_logic_vector((unsigned(park_tmp) + unsigned(park_sum)) - unsigned(park_def));
                 
                 -- if the parking has space for the new cars.
-                if park_tmp < park_max
+                if park_tmp(4) = '0' and empty_s = '0'
                 then
-                    park_total <= park_tmp(3 downto 0);
+                    park_current <= park_tmp(3 downto 0);
                 else
                     -- otherwise the new cars didn't count.
-                    park_tmp := '0' & park_max;
+                    park_tmp := '0' & park_current;
                 end if;
              end if;
             
         end if;
         
     end process sum;
+
 
 -- Because the signal we is button, fix the problem of bouncing.
 enable_we:
@@ -159,16 +163,30 @@ enable_we:
          
     end process enable_we;
     we_pulse <= we_start_1 and (not we_start_2);
-    
+
+
+-- the register that have the maximum free space.
+register_park_total:
+    process(clk) is
+    begin
+        if rising_edge(clk)
+        then
+            if we = '1'
+            then
+                park_total <= din;
+            else
+                park_total <= park_total;
+            end if;
+        end if;
+    end process register_park_total;
+
+
     -- check if is empty of full.
-    full <= '1' when park_total = park_max else '0';
-    empty <= '1' when park_total = "0000" else '0';
+    full <= '1' when park_current = park_total else '0';
+    empty_s <= '1' when park_current = "0000" else '0';
+    empty <= empty_s;
     
     -- calulate free spaces.
-    park_free <= std_logic_vector(unsigned(park_max) - unsigned(park_total));
-    
-    -- initialize the parking space.
-    park_max <= din when we_pulse = '1' else park_max;
-    
-    
+    park_free <= std_logic_vector(unsigned(park_total) - unsigned(park_current));
+   
 end Behavioral;
