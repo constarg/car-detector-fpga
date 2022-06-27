@@ -67,9 +67,6 @@ architecture Behavioral of main is
     signal we_start_1: std_logic;
     signal we_start_2: std_logic;
     signal we_pulse: std_logic;
-    
-    -- empty.
-    signal empty_s: std_logic;
 
 begin
     -- sensor for port a.
@@ -112,37 +109,44 @@ car_leaves_b:
               leave => car_b_leaves(0)
              );  
 
-
 -- add and remove the cars that enters and leaves
 sum:
     process (clk) is
-        variable park_tmp: std_logic_vector(4 downto 0) := "00000";
+        variable park_tmp: unsigned(4 downto 0) := "00000";
         variable park_sum: std_logic_vector(1 downto 0) := "00";
         variable park_def: std_logic_vector(1 downto 0) := "00";
         
     begin
-        park_tmp := '0' & park_current;
+        park_tmp := '0' & unsigned(park_current);
         -- in the rising edge of the clock check.
         if rising_edge(clk)
         then
             if ce = '0' and we = '0'
             then
-                -- the sum of the cars that has been entered.
-                park_sum := '0' & std_logic_vector(unsigned(car_a_enters) + unsigned(car_b_enters));
                 
-                -- the sum of the cars that has been leave.
-                park_def := '0' & std_logic_vector(unsigned(car_a_leaves) + unsigned(car_b_leaves));
+                if car_a_enters(0) = '1' then
+                    park_tmp := park_tmp + 1;
+                end if;  
                 
-                -- add to the total cars in the parking the new cars and remove those that left.
-                park_tmp := std_logic_vector((unsigned(park_tmp) + unsigned(park_sum)) - unsigned(park_def));
+                if car_b_enters(0) = '1' then
+                    park_tmp := park_tmp + 1;
+                end if;
+                
+                if car_a_leaves(0) = '1' then
+                    park_tmp := park_tmp - 1;
+                end if;
+                
+                if car_b_leaves(0) = '1' then
+                    park_tmp := park_tmp - 1;
+                end if;
                 
                 -- if the parking has space for the new cars.
-                if park_tmp(4) = '0' and empty_s = '0'
+                if std_logic_vector(park_tmp) <= '0' & park_total
                 then
-                    park_current <= park_tmp(3 downto 0);
+                    park_current <= std_logic_vector(park_tmp(3 downto 0));
                 else
                     -- otherwise the new cars didn't count.
-                    park_tmp := '0' & park_current;
+                    park_tmp := '0' & unsigned(park_current);
                 end if;
              end if;
             
@@ -183,8 +187,7 @@ register_park_total:
 
     -- check if is empty of full.
     full <= '1' when park_current = park_total else '0';
-    empty_s <= '1' when park_current = "0000" else '0';
-    empty <= empty_s;
+    empty <= '1' when park_current = "0000" else '0';
     
     -- calulate free spaces.
     park_free <= std_logic_vector(unsigned(park_total) - unsigned(park_current));

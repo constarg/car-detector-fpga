@@ -24,7 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -68,34 +68,133 @@ clock_p:
           wait for 5ns;
      end process clock_p;
       
-main_p:
-     process is
-     begin
-          din_s <= "0000";
-          wait for 10ns;
-          din_s <= "0001";
-          wait for 10ns;
-          din_s <= "0011";
-          wait for 10ns;
-          din_s <= "0010";
-          wait for 10ns;
-          din_s <= "0000";
-          din_s <= "0000";
-          wait for 10ns;
-          din_s <= "0001";
-          wait for 10ns;
-          din_s <= "0011";
-          wait for 10ns;
-          din_s <= "0010";
-          wait for 10ns;
-          din_s <= "0000";
-          wait;
-          
-     end process main_p;      
+control_signals:
+    process is
+    begin
+         ce_s <= '0';
+         wait for 20ns;
+         --ce_s <= '1';
+         wait for 20ns;
+         --ce_s <= '0';
+         wait for 60ns;
+         --we_s <= '0';
+         wait for 60ns;
+         --we_s <= '1';
+         wait for 30ns;
+    end process control_signals;     
+ 
+din_signal:
+    process is
+    begin
+        -- enter from a.
+        for i in 0 to 2**4-1
+        loop
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             din_s <= "0001";
+             wait for 10ns;
+             din_s <= "0011";
+             wait for 10ns;
+             din_s <= "0010";
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             -- check if we put more cars.
+             assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
+             
+         end loop;
+    
+         -- exit from a.         
+         for i in 0 to 2**4-1
+         loop
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             din_s <= "0010";
+             wait for 10ns;
+             din_s <= "0011";
+             wait for 10ns;
+             din_s <= "0001";
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             -- check if car leaves from empty parking.
+             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;
+             
+         end loop;
+         
+         -- enter from b.
+         for i in 0 to 2**4-1 
+         loop
+              wait for 10ns;
+              din_s <= "0000";
+              wait for 10ns;
+              din_s <= "0100";
+              wait for 10ns;
+              din_s <= "1100";
+              wait for 10ns;
+              din_s <= "1000";
+              wait for 10ns;
+              din_s <= "0000";
+              wait for 10ns;
+              assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
+         end loop;
+
+         -- exit from b.
+         for i in 0 to 2**4-1
+         loop
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             din_s <= "1000";
+             wait for 10ns;
+             din_s <= "1100";
+             wait for 10ns;
+             din_s <= "0100";
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;             
+         end loop;
 
 
+         -- enter from a and b.
+         for i in 0 to 2**4-1
+         loop
+              wait for 10ns;
+              din_s <= "0000";
+              wait for 10ns;
+              din_s <= "0101";
+              wait for 10ns;
+              din_s <= "1111";
+              wait for 10ns;
+              din_s <= "1010";
+              wait for 10ns;
+              din_s <= "0000";
+              wait for 10ns;
+              assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
+         end loop;
+        
+         -- exit from a and b.
+         for i in 0 to 2**4-1 
+         loop
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             din_s <= "1010";
+             wait for 10ns;
+             din_s <= "1111";
+             wait for 10ns;
+             din_s <= "0101";
+             wait for 10ns;
+             din_s <= "0000";
+             wait for 10ns;
+             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;
+         end loop;
 
-
+         wait; 
+    end process din_signal;      
 
 
 
