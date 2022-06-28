@@ -82,6 +82,7 @@ car_enter_a:
               clk => clk,
               entered => car_a_enters
             );
+            
 -- car enter port b.
 car_enter_b:
      entity work.car_enters(Behavioral)

@@ -71,8 +71,10 @@ clock_p:
 control_signals:
     process is
     begin
+         ce_s <= '0';
+         wait for 80ns;
          ce_s <= '1';
-         wait for 30ns;
+         wait for 50ns;
          ce_s <= '0';
          wait for 30ns;
          we_s <= '0';
@@ -84,6 +86,32 @@ control_signals:
 din_signal:
     process is
     begin
+          wait for 30ns;
+         -- simulate a car that do not enter.
+          din_s <= "0000";
+          wait for 10ns;
+          din_s <= "0001";
+          wait for 10ns;
+          din_s <= "0011";
+          wait for 10ns;
+          din_s <= "0001"; -- car go backwards.
+          wait for 10ns;
+
+         -- simulate a car that do not enter at first but enter in the end.
+          din_s <= "0000";
+          wait for 10ns;
+          din_s <= "0001";
+          wait for 10ns;
+          din_s <= "0011";
+          wait for 10ns;
+          din_s <= "0001"; -- car go backwards.
+          wait for 10ns;
+          din_s <= "0011"; -- go again.
+          wait for 10ns;
+          din_s <= "0010";
+          wait for 10ns;
+          din_s <= "0000";  -- enter.
+
         -- enter from a.
         for i in 0 to 2**4-1
         loop
