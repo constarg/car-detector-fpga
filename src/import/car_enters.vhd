@@ -76,9 +76,6 @@ car_change_a_state:
                 if sensors = "01"
                 then
                     port_a_next <= s1;
-                elsif sensors = "00"
-                then
-                    port_a_next <= s0;
                 else
                     port_a_next <= s0;
                 end if;

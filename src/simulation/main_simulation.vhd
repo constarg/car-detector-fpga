@@ -71,15 +71,13 @@ clock_p:
 control_signals:
     process is
     begin
+         ce_s <= '1';
+         wait for 30ns;
          ce_s <= '0';
-         wait for 20ns;
-         --ce_s <= '1';
-         wait for 20ns;
-         --ce_s <= '0';
-         wait for 60ns;
-         --we_s <= '0';
-         wait for 60ns;
-         --we_s <= '1';
+         wait for 30ns;
+         we_s <= '0';
+         wait for 30ns;
+         we_s <= '1';
          wait for 30ns;
     end process control_signals;     
  

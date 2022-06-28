@@ -51,17 +51,17 @@ architecture Behavioral of main is
     
     -- max number of cars.
     signal park_total: std_logic_vector(3 downto 0) := "1111";
-    -- total cars.
+    -- total cars currently in parking.
     signal park_current: std_logic_vector(3 downto 0) := "0000";
 
     -- if car enter on a.
-    signal car_a_enters: std_logic_vector(0 downto 0);
+    signal car_a_enters: std_logic;
     -- if car enter on b.
-    signal car_b_enters: std_logic_vector(0 downto 0);
+    signal car_b_enters: std_logic;
     -- if car leave on a.
-    signal car_a_leaves: std_logic_vector(0 downto 0);
+    signal car_a_leaves: std_logic;
     -- if car leave on b.
-    signal car_b_leaves: std_logic_vector(0 downto 0);
+    signal car_b_leaves: std_logic;
     
     -- we bouncing.
     signal we_start_1: std_logic;
@@ -80,7 +80,7 @@ car_enter_a:
     port map(
               sensors => a,
               clk => clk,
-              entered => car_a_enters(0)
+              entered => car_a_enters
             );
 -- car enter port b.
 car_enter_b:
@@ -88,7 +88,7 @@ car_enter_b:
      port map(
               sensors => b,
               clk => clk,
-              entered => car_b_enters(0)
+              entered => car_b_enters
              );  
 
 -- car leaves from port a.
@@ -97,7 +97,7 @@ car_leaves_a:
      port map(
               sensors => a,
               clk => clk,
-              leave => car_a_leaves(0)
+              leave => car_a_leaves
              );  
 
 -- car leaves from port b.
@@ -106,37 +106,34 @@ car_leaves_b:
      port map(
               sensors => b,
               clk => clk,
-              leave => car_b_leaves(0)
+              leave => car_b_leaves
              );  
 
 -- add and remove the cars that enters and leaves
 sum:
     process (clk) is
         variable park_tmp: unsigned(4 downto 0) := "00000";
-        variable park_sum: std_logic_vector(1 downto 0) := "00";
-        variable park_def: std_logic_vector(1 downto 0) := "00";
-        
+                
     begin
         park_tmp := '0' & unsigned(park_current);
         -- in the rising edge of the clock check.
         if rising_edge(clk)
         then
-            if ce = '0' and we = '0'
+            if ce = '0'
             then
-                
-                if car_a_enters(0) = '1' then
+                if car_a_enters = '1' then
                     park_tmp := park_tmp + 1;
-                end if;  
+                end if; 
                 
-                if car_b_enters(0) = '1' then
+                if car_b_enters = '1' then
                     park_tmp := park_tmp + 1;
                 end if;
                 
-                if car_a_leaves(0) = '1' then
+                if car_a_leaves = '1' then
                     park_tmp := park_tmp - 1;
                 end if;
                 
-                if car_b_leaves(0) = '1' then
+                if car_b_leaves = '1' then
                     park_tmp := park_tmp - 1;
                 end if;
                 
@@ -175,7 +172,7 @@ register_park_total:
     begin
         if rising_edge(clk)
         then
-            if we = '1'
+            if we_pulse = '1' and (park_current = "0000")
             then
                 park_total <= din;
             else

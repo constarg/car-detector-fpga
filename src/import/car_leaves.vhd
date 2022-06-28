@@ -76,9 +76,6 @@ begin
                 if sensors = "10"
                 then
                     port_a_next <= s1;
-                elsif sensors = "00"
-                then
-                    port_a_next <= s0;
                 else
                     port_a_next <= s0;
                 end if;
