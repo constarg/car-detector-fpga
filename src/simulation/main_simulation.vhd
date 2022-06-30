@@ -126,9 +126,6 @@ din_signal:
              wait for 10ns;
              din_s <= "0000";
              wait for 10ns;
-             -- check if we put more cars.
-             assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
-             
          end loop;
     
          -- exit from a.         
@@ -145,9 +142,6 @@ din_signal:
              wait for 10ns;
              din_s <= "0000";
              wait for 10ns;
-             -- check if car leaves from empty parking.
-             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;
-             
          end loop;
          
          -- enter from b.
@@ -164,7 +158,6 @@ din_signal:
               wait for 10ns;
               din_s <= "0000";
               wait for 10ns;
-              assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
          end loop;
 
          -- exit from b.
@@ -181,7 +174,6 @@ din_signal:
              wait for 10ns;
              din_s <= "0000";
              wait for 10ns;
-             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;             
          end loop;
 
 
@@ -199,7 +191,6 @@ din_signal:
               wait for 10ns;
               din_s <= "0000";
               wait for 10ns;
-              assert full_s = '0' and i < 15 report "FULL PARKING" severity warning;
          end loop;
         
          -- exit from a and b.
@@ -216,7 +207,6 @@ din_signal:
              wait for 10ns;
              din_s <= "0000";
              wait for 10ns;
-             assert empty_s = '0' and i < 15 report "EMPTY PARKING" severity warning;
          end loop;
 
          wait; 
