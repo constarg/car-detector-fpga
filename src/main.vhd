@@ -186,7 +186,7 @@ register_park_total:
     -- check if is empty of full.
     full <= '1' when park_current = park_total else '0';
     empty <= '1' when park_current = "0000" else '0';
-    
+   
     -- calulate free spaces.
     park_free <= std_logic_vector(unsigned(park_total) - unsigned(park_current));
    
